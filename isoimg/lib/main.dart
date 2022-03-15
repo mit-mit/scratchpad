@@ -9,6 +9,8 @@ import 'package:flutter/services.dart';
 import 'package:image/image.dart' as image;
 import 'package:loading_indicator/loading_indicator.dart';
 
+typedef SpawnFunction = Uint8List Function();
+
 void main() {
   runApp(const MyApp());
 }
@@ -87,13 +89,15 @@ class _MyHomePageState extends State<MyHomePage> {
     setState(() {
       _loading = true;
     });
-    final Uint8List encoded = await compute(_applySepiaFilter, _image!);
-    // Alternative with Isolate.run (currently crashes).
-    // final Uint8List encoded = await Isolate.run(() => _applySepiaFilter(_image!));
+    final Uint8List encoded = await Isolate.run(_spawn(_image!));
     setState(() {
       _image = encoded;
       _loading = false;
     });
+  }
+
+  static SpawnFunction _spawn(Uint8List image) {
+    return () => _applySepiaFilter(image);
   }
 
   void _reset() {
